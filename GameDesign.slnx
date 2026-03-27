@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="ShonenJump/ShonenJump.vcxproj" Id="ea86d346-2c9a-4a0b-9bb9-0d1bed2ee0a0" />
+</Solution>
