@@ -9,16 +9,22 @@ void gameMain() {
     RECT shop_rect = { 600, 620, 1000, 700 };
     RECT exit_rect = { 600, 720, 1000, 800 };
 
+    IMAGE bg_img1;
+    IMAGE bg_img;
+
     int hover_button = 0;
 
     ExMessage msg;
     int corner_radius = 15;
     char ch;
 
+    loadimage(&bg_img, "F:\\GameMaterial\\Bg.jpg");
+    loadimage(&bg_img1, "F:\\GameMaterial\\Bg_1.png");
+
     BeginBatchDraw();
 
-
     while (1) {
+        putimage(0, 0, &bg_img1);
         while (peekmessage(&msg, EX_MOUSE)) {
             // 高亮 //
             if (msg.x >= start_rect.left && msg.x <= start_rect.right &&
@@ -59,20 +65,18 @@ void gameMain() {
                     Exit();
                 }
             }
-            else if (msg.message == WM_RBUTTONDOWN) {
-                return;
-            }
+            
         }
 
         setfillcolor(0x3D3A39);
         // 开始按钮
         if (hover_button == 1) {
-            setlinecolor(0xB3DBF9);  // 高亮边框
-            setlinestyle(PS_SOLID, 3);  // 加粗边框
+            setlinecolor(0xB3DBF9);
+            setlinestyle(PS_SOLID, 3);
         }
         else {
-            setlinecolor(0x3D3A39);  // 普通边框
-            setlinestyle(PS_SOLID, 3);  // 正常边框
+            setlinecolor(0x3D3A39);
+            setlinestyle(PS_SOLID, 3);
         }
         fillroundrect(start_rect.left, start_rect.top,
             start_rect.right, start_rect.bottom, corner_radius, corner_radius);
@@ -133,10 +137,10 @@ void gameMain() {
         text_y = shop_rect.top + (shop_rect.bottom - shop_rect.top - textheight("商城")) / 2;
         outtextxy(text_x, text_y, "商城");
         //退出
-        text_width = textwidth("退出登录");
+        text_width = textwidth("退出游戏");
         text_x = exit_rect.left + (exit_rect.right - exit_rect.left - text_width) / 2;
-        text_y = exit_rect.top + (exit_rect.bottom - exit_rect.top - textheight("退出登录")) / 2;
-        outtextxy(text_x, text_y, "退出登录");
+        text_y = exit_rect.top + (exit_rect.bottom - exit_rect.top - textheight("退出游戏")) / 2;
+        outtextxy(text_x, text_y, "退出游戏");
 
 
         FlushBatchDraw();
@@ -148,6 +152,8 @@ void gameMain() {
 // 启动
 void GameIn() {
 
+    PlayMusic("bgm_start1.mp3");
+
     RECT storyMode_rect= { 600, 520, 1000, 600 };
     RECT endlessMode_rect = { 600, 620, 1000, 700 };
 
@@ -157,6 +163,8 @@ void GameIn() {
 
     int button = 0;
     int corner_radius = 15;
+
+
 
     BeginBatchDraw();
 
@@ -185,18 +193,19 @@ void GameIn() {
                 }
             }
             else if (msg.message == WM_RBUTTONDOWN) {
-                return;
+                PlayMusic("bgm.mp3");
+                gameMain();
             }
         }
         setfillcolor(0x3D3A39);
         // 开始按钮
         if (button == 1) {
-            setlinecolor(0xB3DBF9);  // 高亮边框
-            setlinestyle(PS_SOLID, 3);  // 加粗边框
+            setlinecolor(0xB3DBF9);
+            setlinestyle(PS_SOLID, 3);
         }
         else {
-            setlinecolor(0x3D3A39);  // 普通边框
-            setlinestyle(PS_SOLID, 3);  // 正常边框
+            setlinecolor(0x3D3A39);
+            setlinestyle(PS_SOLID, 3);
         }
         fillroundrect(storyMode_rect.left, storyMode_rect.top,
             storyMode_rect.right, storyMode_rect.bottom, corner_radius, corner_radius);
@@ -265,6 +274,11 @@ void GameIn() {
 // 信息
 void Info() {
 
+    BeginBatchDraw();
+
+    ExMessage msg;
+    int corner_radius = 15;
+
     IMAGE bg_img;
     loadimage(&bg_img, "F:\\GameMaterial\\Bg.jpg");
 
@@ -286,7 +300,7 @@ void Shop() {
 
 // 退出
 void Exit() {
-
+    closegraph();
 }
 
 // 去锯齿
@@ -298,4 +312,68 @@ void setSmoothFont(int height, const char* fontName) {
     f.lfQuality = ANTIALIASED_QUALITY;
     strcpy_s(f.lfFaceName, fontName);
     settextstyle(&f);                      
+}
+
+// 播放音乐
+void PlayMusic(const char* filename) {
+
+    StopMusic ();
+    // 获取当前工作目录并打印
+    char cwd[256];
+    GetCurrentDirectory(256, cwd);
+    printf("当前工作目录: %s\n", cwd);
+    printf("尝试播放: %s\n", filename);
+
+    // 检查文件是否存在
+    FILE* test = fopen(filename, "rb");
+    if (test == NULL) {
+        printf("错误：找不到音乐文件 %s\n", filename);
+        return;
+    }
+    fclose(test);
+
+    // 打开音乐文件
+    char openCmd[512];
+    sprintf(openCmd, "open \"%s\" alias current_music", filename);
+
+    int result = mciSendString(openCmd, NULL, 0, NULL);
+    if (result == 0) {
+        // 播放音乐（循环播放）
+        int playResult = mciSendString("play current_music repeat", NULL, 0, NULL);
+        if (playResult == 0) {
+            printf("成功播放: %s\n", filename);
+        }
+        else {
+            printf("播放失败，错误码: %d\n", playResult);
+        }
+    }
+    else {
+        printf("打开文件失败，错误码: %d\n", result);
+    }
+}
+
+// 停止音乐
+void StopMusic(void) {
+    mciSendString("close current_music", NULL, 0, NULL);
+}
+
+// 一次性音效
+void PlaySFX(const char* filename) {
+    static int sfx_counter = 0;
+
+    char alias[64];
+    sprintf(alias, "sfx_%d", sfx_counter++);
+
+    char openCmd[512];
+    sprintf(openCmd, "open \"%s\" alias %s", filename, alias);
+
+    int result = mciSendString(openCmd, NULL, 0, NULL);
+    if (result == 0) {
+        char playCmd[512];
+        sprintf(playCmd, "play %s", alias);
+        mciSendString(playCmd, NULL, 0, NULL);
+    }
+    else {
+        printf("SFX failed to open: %d\n", result);
+    }
 }

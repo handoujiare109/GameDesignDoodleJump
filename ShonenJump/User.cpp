@@ -17,18 +17,16 @@ bool login() {
     // 0正常，1不存在，2错误
     int login_error = 0;
 
-    RECT login_box = { 450, 250, 1150, 750 };  // 登录框的位置和大小
-    // 文本框区域
-    RECT username_rect = { 600, 350, 1000, 400 };  // 用户名文本框
-    RECT password_rect = { 600, 450, 1000, 500 };  // 密码文本框
-    RECT login_rect = { 600, 550, 1000, 620 };       // 登录按钮
-    RECT register_rect = { 700, 650, 900, 700 };    // 注册入口
+    RECT login_box = { 450, 250, 1150, 750 };
+    RECT username_rect = { 600, 350, 1000, 400 };
+    RECT password_rect = { 600, 450, 1000, 500 };
+    RECT login_rect = { 600, 550, 1000, 620 };
+    RECT register_rect = { 700, 650, 900, 700 };
 
     ExMessage msg;
     int corner_radius = 15;
     char ch;
 
-    // 加载背景图片
     IMAGE bg_img;
     IMAGE bg_img1;
     loadimage(&bg_img, "F:\\GameMaterial\\Bg.jpg");
@@ -41,12 +39,12 @@ bool login() {
                     msg.y >= username_rect.top && msg.y <= username_rect.bottom) {
                     input_state = 1;
                 }
-                // 是否点击密码文本框
+                // 点击密码文本框
                 else if (msg.x >= password_rect.left && msg.x <= password_rect.right &&
                     msg.y >= password_rect.top && msg.y <= password_rect.bottom) {
                     input_state = 2;
                 }
-                // 是否点击登录按钮
+                // 点击登录按钮
                 else if (msg.x >= login_rect.left && msg.x <= login_rect.right &&
                     msg.y >= login_rect.top && msg.y <= login_rect.bottom) {
 
@@ -54,24 +52,24 @@ bool login() {
                     if (strlen(username) > 0 && strlen(password) > 0) {
                         FILE* fp = fopen(file_path, "rb");
                         if (fp != NULL) {
-                            struct User u;
-                            while (fread(&u, sizeof(struct User), 1, fp) == 1) {
+                            User u;
+                            while (fread(&u, sizeof(User), 1, fp) == 1) {
                                 if (strcmp(u.username, username) == 0 &&
                                     strcmp(u.password, password) == 0) {
                                     fclose(fp);
-                                    return true;// 成功
+                                    return true;
                                 }
                             }
                             fclose(fp);
                         }
-                        login_error = 1;// 失败
+                        login_error = 1;
                     }
                 }
                 else if (msg.x >= register_rect.left && msg.x <= register_rect.right &&
                     msg.y >= register_rect.top && msg.y <= register_rect.bottom) {
-                    regist();   // 注册
+                    regist();
                 }
-                // 点击其他区域退出输入状态
+
                 else {
                     input_state = 0;
                 }
@@ -79,7 +77,7 @@ bool login() {
             else if (msg.message == WM_CHAR && input_state != 0) {
                 ch = msg.ch;
 
-                // 处理退格键
+                // 退格
                 if (ch == '\b') {
                     if (input_state == 1 && username_len > 0) {
                         username[--username_len] = '\0';
@@ -88,11 +86,11 @@ bool login() {
                         password[--password_len] = '\0';
                     }
                 }
-                // 处理回车键
+                // 回车
                 else if (ch == '\r') {
                     input_state = 0;
                 }
-                // 普通字符输入
+                // 普通字符
                 else if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') ||
                     (ch >= '0' && ch <= '9')) {
                     if (input_state == 1 && username_len < NAME_LEN - 1) {
@@ -131,7 +129,7 @@ bool login() {
         fillrectangle(password_rect.left, password_rect.top,
             password_rect.right, password_rect.bottom);
 
-        // 高亮输入框
+        // 高亮
         if (input_state == 1) {
             setlinecolor(0xB3DBF9);
             setlinestyle(PS_SOLID, 3);
@@ -165,14 +163,14 @@ bool login() {
         }
 
         // 绘制登录按钮
-        setfillcolor(0x3D3A39);  // 填充色
-        setlinecolor(0x3D3A39);  // 边框颜色设置为相同的颜色
-        setlinestyle(PS_SOLID, 1);  // 设置边框宽度
+        setfillcolor(0x3D3A39);
+        setlinecolor(0x3D3A39);
+        setlinestyle(PS_SOLID, 1);
         fillroundrect(login_rect.left, login_rect.top,
             login_rect.right, login_rect.bottom,
             corner_radius, corner_radius);
 
-        // 登录按钮文字
+        // 登录文字
         setbkmode(TRANSPARENT);
         settextcolor(0xB3DBF9);
         setSmoothFont(35, "汉仪文黑 85W");
@@ -207,7 +205,7 @@ bool login() {
                 cursor_y = password_rect.top + 12;
             }
             static int cursor_blink = 0;
-            cursor_blink = (cursor_blink + 1) % 90;  // 加快闪烁频率
+            cursor_blink = (cursor_blink + 1) % 90;
             if (cursor_blink < 45) {
                 setlinecolor(0x3D3A39);
                 line(cursor_x, cursor_y, cursor_x, cursor_y + 25);
@@ -285,7 +283,7 @@ void regist() {
                     }
                     else {
 
-                        struct User u;
+                        User u;
 
                         u.id = rand();
                         strcpy(u.username, username);
@@ -442,28 +440,28 @@ void regist() {
     EndBatchDraw();
 }
 
-//保存用户
-void saveUser(struct User u) {
+// 保存用户
+void saveUser(User u) {
     FILE* fp = fopen(file_path, "ab");
     if (fp == NULL) {
         printf("文件打开失败！\n");
         return;
     }
 
-    fwrite(&u, sizeof(struct User), 1, fp);
+    fwrite(&u, sizeof(User), 1, fp);
     fclose(fp);
 }
 
-//查找用户
+// 查找用户
 int findUser(char* username) {
-    struct User u;
+    User u;
     FILE* fp = fopen(file_path, "rb");
 
     if (fp == NULL) {
         return -1;
     }
 
-    while (fread(&u, sizeof(struct User), 1, fp) == 1) {
+    while (fread(&u, sizeof(User), 1, fp) == 1) {
         if (strcmp(u.username, username) == 0) {
             fclose(fp);
             return u.id;
@@ -483,14 +481,12 @@ void fadeFromBgTransition(IMAGE* img, int duration_ms) {
 
     BeginBatchDraw();
 
-    // 先显示背景
     putimage(0, 0, img);
     FlushBatchDraw();
     Sleep(200);
 
-    // 逐渐降低白色亮度
     for (int i = 0; i <= steps; i++) {
-        int white_level = 0 + (255 * i / steps);  // 从255到0
+        int white_level = 0 + (255 * i / steps);
 
         cleardevice();
         putimage(0, 0, img);
@@ -501,8 +497,6 @@ void fadeFromBgTransition(IMAGE* img, int duration_ms) {
         Sleep(step_time);
     }
 
-    // 最后确保显示图片
-    
     FlushBatchDraw();
 
     EndBatchDraw();
@@ -529,7 +523,6 @@ void fadeFromWhiteTransition(IMAGE* img, int duration_ms) {
         Sleep(step_time);
     }
 
-    // 最后确保显示图片
     cleardevice();
     putimage(0, 0, img);
     FlushBatchDraw();
